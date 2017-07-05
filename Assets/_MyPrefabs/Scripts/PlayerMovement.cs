@@ -135,7 +135,6 @@ namespace RPG.Characters
 					isRunning = false;
 					canMove = false;
 					anim.SetBool (CharacterAnimatorPara.RUN, isRunning);
-
 					onMovementStop ();
 				}
 			}

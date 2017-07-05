@@ -12,28 +12,28 @@ namespace RPG.Config
 		[SerializeField] Image energyOrb;
 
 		[Header("Character Animations")]
-		[SerializeField] Animation[] deathAnimations;
-		[SerializeField] Animation[] postAnimations;
+		[SerializeField] AnimationClip[] deathAnimations;
+		[SerializeField] AnimationClip[] postAnimations;
 
 		[Header("Character Sounds")]
 		[SerializeField] AudioClip[] soundClips;
 
 		public Image HealthOrb {
 			get{ return healthOrb; }
-			private set{ }
+			set{ }
 		}
 
 		public Image EnergyOrb {
 			get{ return energyOrb; }
-			private set{ }
+			set{ }
 		}
 
-		public Animation[] DeathAnimations {
+		public AnimationClip[] DeathAnimations {
 			get{ return deathAnimations; }
 			private set{ }
 		}
 
-		public Animation[] PostAnimations {
+		public AnimationClip[] PostAnimations {
 			get{ return postAnimations; }
 			private set{ }
 		}

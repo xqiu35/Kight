@@ -38,9 +38,19 @@ namespace RPG.Characters
 
 		// ******************************************* Para & Component *******************************************
 		protected Animator anim;
-		protected CharactorConfig playerConfig;
+		protected CharactorConfig characterConfig;
 		protected AudioSource audio;
 		protected MouseEvent mouseEvent;
+
+
+		// ******************************************* Start *******************************************
+		protected void SetupCharacter()
+		{
+			anim = GetComponent<Animator> ();
+			characterConfig = GetComponent<CharactorConfig> ();
+			audio = GetComponent<AudioSource> ();
+			mouseEvent = FindObjectOfType<MouseEvent> ();
+		}
 
 		// ******************************************* UI Calls ******************************************* 
 		public float healthAsPercentage { get { return (float)c_health / (float)health; } }
@@ -73,18 +83,18 @@ namespace RPG.Characters
 		// ******************************************* UI Calls ******************************************* 
 		protected void UpdateHP()
 		{
-			if (playerConfig==null || playerConfig.HealthOrb == null) {
+			if (characterConfig==null || characterConfig.HealthOrb == null) {
 				return;
 			}
-			playerConfig.HealthOrb.fillAmount = healthAsPercentage;
+			characterConfig.HealthOrb.fillAmount = healthAsPercentage;
 		}
 
 		protected void UpdateMP()
 		{
-			if (playerConfig==null || playerConfig.HealthOrb == null) {
+			if (characterConfig==null || characterConfig.HealthOrb == null) {
 				return;
 			}
-			playerConfig.EnergyOrb.fillAmount = energyAsPercentage;
+			characterConfig.EnergyOrb.fillAmount = energyAsPercentage;
 		}
 
 		// ******************************************* Getters ******************************************* 

@@ -11,6 +11,7 @@ namespace RPG.Weapons
 
 		[SerializeField] GameObject weaponPrefab;
 		[SerializeField] AnimationClip attackAnimation;
+		[SerializeField] AudioClip attackSound;
 		[SerializeField] float damageDelay; // persentage
 
 
@@ -48,6 +49,11 @@ namespace RPG.Weapons
 		{
 			RemoveAnimationEvents();
 			return attackAnimation;
+		}
+
+		public AudioClip GetAudioClip()
+		{
+			return attackSound;
 		}
 
 		// So that asset packs cannot cause crashes

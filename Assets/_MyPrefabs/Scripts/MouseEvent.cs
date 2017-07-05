@@ -62,9 +62,10 @@ namespace RPG.Event
 			}
 			GameObject gameObjectHit = hitInfo.collider.gameObject;
 			Enemy enemyHit = gameObjectHit.GetComponent<Enemy>();
-			if (enemyHit)
+			if (enemyHit && !enemyHit.IsDead)
 			{
-				if (highlightedObj != gameObjectHit) {
+				if (highlightedObj != gameObjectHit)
+				{
 					Dehighlight (highlightedObj);
 					Highlight (gameObjectHit);
 				}
@@ -99,7 +100,7 @@ namespace RPG.Event
 			}
 			highlightedObj = obj;
 			highlighter.HighlightColor = Color.red;
-			highlighter.HighlightThickness = 0.25f;
+			highlighter.HighlightThickness = 0.20f;
 		}
 
 		private void Dehighlight(GameObject obj)

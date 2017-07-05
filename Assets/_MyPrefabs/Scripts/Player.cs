@@ -26,18 +26,16 @@ namespace RPG.Characters
 		[SerializeField] Weapon weaponInUse = null;
 
 		// ******************************************* Uity Calls ******************************************* 
-		void Start () {
-			anim = GetComponent<Animator> ();
-			playerConfig = GetComponent<CharactorConfig> ();
-			audio = GetComponent<AudioSource> ();
-			mouseEvent = FindObjectOfType<MouseEvent> ();
-			playerMovement = GetComponent<PlayerMovement> ();
-
+		void Start ()
+		{
+			SetupCharacter ();
 			useDefaultBaseValue ();
-			PutWeaponInHand ();
+			SetupWeapon ();
 			SetupRuntimeAnimator ();
 			RegisterMouseEvent ();
 			RegisterMovementEvents ();
+
+			anim.runtimeAnimatorController = animatorOverrideController;
 		}
 
 		void Update () {
@@ -47,8 +45,6 @@ namespace RPG.Characters
 		// ******************************************* Set ups *******************************************
 		private void SetupRuntimeAnimator()
 		{
-			anim = GetComponent<Animator>();
-			anim.runtimeAnimatorController = animatorOverrideController;
 			animatorOverrideController["DEFAULT ATTACK"] = weaponInUse.GetAttackAnimClip();
 		}
 
@@ -60,21 +56,25 @@ namespace RPG.Characters
 
 		private void RegisterMovementEvents()
 		{
+			playerMovement = GetComponent<PlayerMovement> ();
 			playerMovement.onMovementStop += onMovementStop;
 		}
 
 		// ******************************************* Battle Calls ******************************************* 
-		public void TakeDamage(int damage, float delay)
+		public void TakeDamage(int damage, float delay, AudioClip attackSound)
 		{
-			StartCoroutine (onDamage (damage, delay));
+			StartCoroutine (onDamage (damage, delay, attackSound));
 		}
 
-		IEnumerator onDamage(int damage, float delay)
+		IEnumerator onDamage(int damage, float delay,AudioClip attackSound)
 		{
 			c_health = Mathf.Clamp (c_health - damage, 0, health);
 			yield return new WaitForSecondsRealtime (delay);
 			UpdateHP ();
-			if (c_health == 0) {
+			audio.clip = attackSound;
+			audio.Play ();
+			if (c_health == 0)
+			{
 				StartCoroutine (Die());
 			}
 		}
@@ -82,7 +82,7 @@ namespace RPG.Characters
 		IEnumerator Die()
 		{
 			CharacterAnimatorPara.setDeath (anim, true);
-			AudioClip[] clips = playerConfig.SoundClips;
+			AudioClip[] clips = characterConfig.SoundClips;
 
 			if (clips.Length > 0) {
 				audio.clip = clips[PlayerSoundIndexes.Death];
@@ -94,13 +94,15 @@ namespace RPG.Characters
 		}
 
 		// ******************************************* Equip Weapon ******************************************* 
-		private void PutWeaponInHand()
+		private void SetupWeapon()
 		{
-			var weaponPrefab = weaponInUse.GetWeaponPrefab();
+			GameObject weaponPrefab = weaponInUse.GetWeaponPrefab();
 			GameObject dominantHand = RequestDominantHand();
-			var weapon = Instantiate(weaponPrefab, dominantHand.transform);
+			GameObject weapon = Instantiate(weaponPrefab, dominantHand.transform);
 			weapon.transform.localPosition = weaponInUse.gripTransform.localPosition;
 			weapon.transform.localRotation = weaponInUse.gripTransform.localRotation;
+			animatorOverrideController["DEFAULT ATTACK"] = weaponInUse.GetAttackAnimClip();
+			audio.clip = weaponInUse.GetAudioClip ();
 		}
 
 		private GameObject RequestDominantHand()
@@ -142,6 +144,10 @@ namespace RPG.Characters
 
 		void AttackHandler()
 		{
+			if (currentTarget!=null && currentTarget.IsDead)
+			{
+				canAttack = false;
+			}
 			if (canAttack)
 			{		
 				transform.LookAt (currentTarget.transform);
@@ -152,7 +158,7 @@ namespace RPG.Characters
 					anim.SetTrigger (CharacterAnimatorPara.ATTACK);
 
 					lastHitTime = Time.time;
-					currentTarget.TakeDamage (c_attackDamage,weaponInUse.getDamageDelay());
+					currentTarget.TakeDamage (c_attackDamage,weaponInUse.getDamageDelay(),weaponInUse.GetAudioClip());
 				}
 			}
 		}
