@@ -29,14 +29,20 @@ namespace RPG.Characters
 		Player player = null;
 
 		// ******************************** Paras ****************************
-		bool isRunning = false;
-		Vector3 clickedPoint;
-		public bool isStopped{get{ return navMeshAgent.isStopped;} set{ navMeshAgent.isStopped = value;}}
+		Vector3 dist;
+		float stopDist;
+		bool canMove = false;
+		bool enemyClicked = false;
+		public bool isRunning{get{ return !navMeshAgent.isStopped;} set{ navMeshAgent.isStopped = !value;}}
+
+		// ******************************** Observers ****************************
+		public delegate void OnMovementStop();
+		public event OnMovementStop onMovementStop;
 
 		// ******************************** Unity Calls ****************************
 		void Start()
 		{
-			clickedPoint = transform.position;
+			dist = transform.position;
 			mouseEvent = FindObjectOfType<MouseEvent> ();
 			navMeshAgent = GetComponent<NavMeshAgent> ();
 			anim = GetComponent<Animator> ();
@@ -45,6 +51,7 @@ namespace RPG.Characters
 
 			navMeshAgent.speed = moveSpeed;
 			navMeshAgent.stoppingDistance = stoppingDist;
+			navMeshAgent.destination = transform.position;
 			anim.speed = moveAnimSpeed;
 
 			mouseEvent.onMouseOverWalkable += OnMouseOverWalkable;
@@ -54,7 +61,8 @@ namespace RPG.Characters
 
 		void Update()
 		{
-			UpdateAnimation();
+			RemoveGlitch();
+			UpdateMovement (dist);
 		}
 
 		// ******************************** Callbacks ********************************************
@@ -62,13 +70,16 @@ namespace RPG.Characters
 		{
 			if (Input.GetMouseButtonDown ((int)clickMoveConfig))
 			{
-				clickedPoint = destination;
-				if ((clickedPoint - transform.position).magnitude > minMoveDist) {
-					isRunning = true;
-					MoveTo (stoppingDist, destination);
-					CharacterAnimatorPara.setWalk (anim, isRunning);
+				dist = destination;
+				if ((dist - transform.position).magnitude > minMoveDist)
+				{
+					canMove = true;
+					enemyClicked = false;
+					stopDist = stoppingDist;
 				}
-
+				else {
+					canMove = false;
+				}
 			}
 		}
 			
@@ -76,22 +87,29 @@ namespace RPG.Characters
 		{
 			if (Input.GetMouseButtonDown((int)clickMoveConfig))
 			{
-				clickedPoint = enemy.gameObject.transform.position;
-				if (!player.isTargetInRange (clickedPoint)) {
-					isRunning = true;
-					float stopDistance = player.getCurrentAttackRange ();
-					CharacterAnimatorPara.setWalk (anim, isRunning);
-					MoveTo (stopDistance, clickedPoint);
+				dist = enemy.gameObject.transform.position;
+				if (!player.isTargetInRange (dist))
+				{
+					canMove = true;
+					enemyClicked = true;
+					stopDist = player.getCurrentAttackRange ();
+				} else {
+					canMove = false;
 				}
 			}
 		}
 
 		// ******************************** AI Move ********************************************
-		void MoveTo(float stopDistance, Vector3 destination)
+		void UpdateMovement(Vector3 destination)
 		{
-			navMeshAgent.stoppingDistance = stopDistance;
-			navMeshAgent.destination = destination;
-			navMeshAgent.isStopped = false;
+			if (canMove)
+			{
+				isRunning = true;
+				navMeshAgent.stoppingDistance = stopDist;
+				navMeshAgent.destination = destination;
+				anim.SetBool (CharacterAnimatorPara.RUN, isRunning);
+				canMove = false;
+			}
 		}
 
 		// TODO make this get called again
@@ -108,27 +126,19 @@ namespace RPG.Characters
 
 
 		// ******************************** UpdateAnimation ********************************************
-		void UpdateAnimation()
+		void RemoveGlitch()
 		{
-			if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance) {
+			if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance && isRunning)
+			{
 				if (!navMeshAgent.hasPath || Mathf.Abs (navMeshAgent.velocity.sqrMagnitude) <= stopVelocity)
 				{
-					navMeshAgent.isStopped = true;
+					isRunning = false;
+					canMove = false;
+					anim.SetBool (CharacterAnimatorPara.RUN, isRunning);
+
+					onMovementStop ();
 				}
 			}
-			
-			if (navMeshAgent.isStopped)
-			{
-				isRunning = false;
-			}
-			else
-			{
-				isRunning = true;
-			}
-
-			isStopped = navMeshAgent.isStopped;
-			anim.SetBool (CharacterAnimatorPara.RUN, isRunning);
-
 		}
 
 		public void Stop()
@@ -141,14 +151,15 @@ namespace RPG.Characters
 		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.blue;
-			Gizmos.DrawLine (transform.position, clickedPoint);
-			Gizmos.DrawSphere (clickedPoint, 0.2f);
+			Gizmos.DrawLine (transform.position, dist);
+			Gizmos.DrawSphere (dist, 0.2f);
 
-			if (navMeshAgent == null) {
+			if (navMeshAgent == null)
+			{
 				return;
 			}
-			Vector3 reductionVector = (clickedPoint - transform.position).normalized * navMeshAgent.stoppingDistance;
-			Vector3 stopPosition = clickedPoint - reductionVector;
+			Vector3 reductionVector = (dist - transform.position).normalized * navMeshAgent.stoppingDistance;
+			Vector3 stopPosition = dist - reductionVector;
 			Gizmos.DrawSphere (stopPosition, 0.2f);
 		}
 	}

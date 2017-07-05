@@ -19,7 +19,7 @@ namespace RPG.Characters
 		// ******************************************* Paras *******************************************
 		float lastHitTime = 0f;
 		bool canAttack = false;
-		Enemy targetEnemy;
+		Enemy currentTarget = null;
 
 		// ******************************************* Weapon *******************************************
 		[Header("Character Weapon")]
@@ -36,9 +36,10 @@ namespace RPG.Characters
 			useDefaultBaseValue ();
 			PutWeaponInHand ();
 			SetupRuntimeAnimator ();
-			RegisterForMouseClick ();
+			RegisterMouseEvent ();
+			RegisterMovementEvents ();
 		}
-		
+
 		void Update () {
 			AttackHandler ();
 		}
@@ -51,10 +52,15 @@ namespace RPG.Characters
 			animatorOverrideController["DEFAULT ATTACK"] = weaponInUse.GetAttackAnimClip();
 		}
 
-		private void RegisterForMouseClick()
+		private void RegisterMouseEvent()
 		{
-			mouseEvent.onMouseOverEnemy += OnMouseOverEnemy;
 			mouseEvent.onMouseOverWalkable += OnMouseOverWalkable;
+			mouseEvent.onMouseOverEnemy += OnMouseOverEnemy;
+		}
+
+		private void RegisterMovementEvents()
+		{
+			playerMovement.onMovementStop += onMovementStop;
 		}
 
 		// ******************************************* Battle Calls ******************************************* 
@@ -102,21 +108,11 @@ namespace RPG.Characters
 		{
 			if (Input.GetMouseButtonDown ((int)attackConfig))
 			{
-				print ("clicked");
-				targetEnemy = enemy;
-
-				if (isTargetInRange (enemy.gameObject.transform.position))
-				{
-					canAttack = true;
-				}
-				else
-				{
-					StartCoroutine (moveThenAttack ());
-				}
-
+				currentTarget = enemy;
+				CheckAndSetCanAttack ();
 			}
 		}
-	
+
 		void OnMouseOverWalkable(Vector3 destination)
 		{
 			if (Input.GetMouseButtonDown ((int)attackConfig))
@@ -133,35 +129,52 @@ namespace RPG.Characters
 
 		void stopAttacking()
 		{
+			currentTarget = null;
 			canAttack = false;
-			targetEnemy = null;
 			anim.speed = playerMovement.moveAnimSpeed;
 		}
 
 		void AttackHandler()
 		{
 			if (canAttack)
-			{
-				playerMovement.Stop ();
-				transform.LookAt (targetEnemy.transform);
-				if (targetEnemy != null && Time.time - lastHitTime > 1f/c_attackSpeed)
+			{		
+				transform.LookAt (currentTarget.transform);
+
+				if (currentTarget != null && Time.time - lastHitTime > 1f/c_attackSpeed)
 				{
 					anim.speed = attackSpeed;
 					anim.SetTrigger (CharacterAnimatorPara.ATTACK);
 
-					targetEnemy.TakeDamage (c_attackDamage);
+					currentTarget.TakeDamage (c_attackDamage);
 					lastHitTime = Time.time;
 				}
 			}
 		}
 
-		IEnumerator moveThenAttack()
+		void CheckAndSetCanAttack()
 		{
-			while (!playerMovement.isStopped)
+			if (isTargetInRange (currentTarget.gameObject.transform.position))
 			{
-				yield return new WaitForSeconds(0.01f);
+				canAttack = true;
+				playerMovement.Stop ();
 			}
-			canAttack = true;
+			else
+			{
+				canAttack = false;
+			}
+		}
+
+		void onMovementStop()
+		{
+			if (currentTarget != null) {
+				canAttack = true;
+			}
+		}
+
+		// ******************************** Getters *****************************************
+		public bool getCanAttack()
+		{
+			return canAttack;
 		}
 
 		// ******************************** Draw ********************************************
