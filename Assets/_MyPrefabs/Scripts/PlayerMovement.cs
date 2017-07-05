@@ -29,7 +29,7 @@ namespace RPG.Characters
 		Player player = null;
 
 		// ******************************** Paras ****************************
-		Vector3 dist;
+		Vector3 targetPos;
 		float stopDist;
 		bool canMove = false;
 		bool enemyClicked = false;
@@ -42,7 +42,7 @@ namespace RPG.Characters
 		// ******************************** Unity Calls ****************************
 		void Start()
 		{
-			dist = transform.position;
+			targetPos = transform.position;
 			mouseEvent = FindObjectOfType<MouseEvent> ();
 			navMeshAgent = GetComponent<NavMeshAgent> ();
 			anim = GetComponent<Animator> ();
@@ -62,7 +62,7 @@ namespace RPG.Characters
 		void Update()
 		{
 			RemoveGlitch();
-			UpdateMovement (dist);
+			UpdateMovement (targetPos);
 		}
 
 		// ******************************** Callbacks ********************************************
@@ -70,8 +70,8 @@ namespace RPG.Characters
 		{
 			if (Input.GetMouseButtonDown ((int)clickMoveConfig))
 			{
-				dist = destination;
-				if ((dist - transform.position).magnitude > minMoveDist)
+				targetPos = destination;
+				if ((targetPos - transform.position).magnitude > minMoveDist)
 				{
 					canMove = true;
 					enemyClicked = false;
@@ -87,8 +87,8 @@ namespace RPG.Characters
 		{
 			if (Input.GetMouseButtonDown((int)clickMoveConfig))
 			{
-				dist = enemy.gameObject.transform.position;
-				if (!player.isTargetInRange (dist))
+				targetPos = enemy.gameObject.transform.position;
+				if (!player.isTargetInRange (targetPos))
 				{
 					canMove = true;
 					enemyClicked = true;
@@ -151,15 +151,15 @@ namespace RPG.Characters
 		void OnDrawGizmos()
 		{
 			Gizmos.color = Color.blue;
-			Gizmos.DrawLine (transform.position, dist);
-			Gizmos.DrawSphere (dist, 0.2f);
+			Gizmos.DrawLine (transform.position, targetPos);
+			Gizmos.DrawSphere (targetPos, 0.2f);
 
 			if (navMeshAgent == null)
 			{
 				return;
 			}
-			Vector3 reductionVector = (dist - transform.position).normalized * navMeshAgent.stoppingDistance;
-			Vector3 stopPosition = dist - reductionVector;
+			Vector3 reductionVector = (targetPos - transform.position).normalized * navMeshAgent.stoppingDistance;
+			Vector3 stopPosition = targetPos - reductionVector;
 			Gizmos.DrawSphere (stopPosition, 0.2f);
 		}
 	}

@@ -64,9 +64,15 @@ namespace RPG.Characters
 		}
 
 		// ******************************************* Battle Calls ******************************************* 
-		public void TakeDamage(int damage)
+		public void TakeDamage(int damage, float delay)
+		{
+			StartCoroutine (onDamage (damage, delay));
+		}
+
+		IEnumerator onDamage(int damage, float delay)
 		{
 			c_health = Mathf.Clamp (c_health - damage, 0, health);
+			yield return new WaitForSecondsRealtime (delay);
 			UpdateHP ();
 			if (c_health == 0) {
 				StartCoroutine (Die());
@@ -145,8 +151,8 @@ namespace RPG.Characters
 					anim.speed = attackSpeed;
 					anim.SetTrigger (CharacterAnimatorPara.ATTACK);
 
-					currentTarget.TakeDamage (c_attackDamage);
 					lastHitTime = Time.time;
+					currentTarget.TakeDamage (c_attackDamage,weaponInUse.getDamageDelay());
 				}
 			}
 		}

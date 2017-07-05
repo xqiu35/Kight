@@ -7,6 +7,7 @@ using UnityEngine.AI;
 using RPG.Core;
 using RPG.Weapons;
 using RPG.Event;
+using RPG.Config;
 
 namespace RPG.Characters
 {
@@ -14,6 +15,7 @@ namespace RPG.Characters
     {
 		void Start()
 		{
+			playerConfig = GetComponent<CharactorConfig> ();
 			useDefaultBaseValue ();
 		}
 
@@ -21,9 +23,15 @@ namespace RPG.Characters
 		{
 		}
 
-		public void TakeDamage(int damage)
+		public void TakeDamage(int damage, float delay)
+		{
+			StartCoroutine (onDamage (damage, delay));
+		}
+
+		IEnumerator onDamage(int damage, float delay)
 		{
 			c_health = Mathf.Clamp (c_health - damage, 0, health);
+			yield return new WaitForSecondsRealtime (delay);
 			UpdateHP ();
 			if (c_health == 0) {
 				StartCoroutine (Die());

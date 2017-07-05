@@ -11,6 +11,7 @@ namespace RPG.Weapons
 
 		[SerializeField] GameObject weaponPrefab;
 		[SerializeField] AnimationClip attackAnimation;
+		[SerializeField] float damageDelay; // persentage
 
 
 		[SerializeField] int level;
@@ -22,6 +23,11 @@ namespace RPG.Weapons
 		[SerializeField] int attackSpeed;
 		[SerializeField] int attackRange;
 		[SerializeField] int criticalHit; // persentage
+
+		public float getDamageDelay()
+		{
+			return damageDelay;
+		}
 
 		public float GetMinTimeBetweenHits()
 		{

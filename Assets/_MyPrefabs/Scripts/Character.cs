@@ -52,7 +52,7 @@ namespace RPG.Characters
 			level = 1;
 			health = 100;
 			energy = 100;
-			attackDamage = 50;
+			attackDamage = 10;
 			magicPower = 50;
 			armor = 50;
 			attackSpeed = 1;
