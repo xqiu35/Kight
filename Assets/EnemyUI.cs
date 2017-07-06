@@ -24,7 +24,6 @@ namespace RPG.Characters
 
 		void Update()
 		{
-			RectTransform t = GetComponentInChildren<RectTransform> ();
 			t.rotation = Quaternion.LookRotation (Camera.main.transform.forward);
 		}
 	}

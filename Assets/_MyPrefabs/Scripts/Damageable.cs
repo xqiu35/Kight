@@ -5,6 +5,6 @@ namespace RPG.Core
 {
 	public interface IDamageable
 	{
-		void TakeDamage (int damage, float delay, AudioClip attackSound);
+		void TakeDamage (int damage, float delay, AudioClip attackSound,GameObject attacker);
 	}
 }

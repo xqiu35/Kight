@@ -61,12 +61,12 @@ namespace RPG.Characters
 		}
 
 		// ******************************************* Battle Calls ******************************************* 
-		public void TakeDamage(int damage, float delay, AudioClip attackSound)
+		public void TakeDamage(int damage, float delay, AudioClip attackSound,GameObject attacker)
 		{
-			StartCoroutine (onDamage (damage, delay, attackSound));
+			StartCoroutine (onDamage (damage, delay, attackSound,attacker));
 		}
 
-		IEnumerator onDamage(int damage, float delay,AudioClip attackSound)
+		IEnumerator onDamage(int damage, float delay,AudioClip attackSound,GameObject attacker)
 		{
 			c_health = Mathf.Clamp (c_health - damage, 0, health);
 			yield return new WaitForSecondsRealtime (delay);
@@ -146,7 +146,7 @@ namespace RPG.Characters
 		{
 			if (currentTarget!=null && currentTarget.IsDead)
 			{
-				canAttack = false;
+				stopAttacking ();
 			}
 			if (canAttack)
 			{		
@@ -158,7 +158,7 @@ namespace RPG.Characters
 					anim.SetTrigger (CharacterAnimatorPara.ATTACK);
 
 					lastHitTime = Time.time;
-					currentTarget.TakeDamage (c_attackDamage,weaponInUse.getDamageDelay(),weaponInUse.GetAudioClip());
+					currentTarget.TakeDamage (c_attackDamage,weaponInUse.getDamageDelay(),weaponInUse.GetAudioClip(),gameObject);
 				}
 			}
 		}
@@ -187,6 +187,11 @@ namespace RPG.Characters
 		public bool getCanAttack()
 		{
 			return canAttack;
+		}
+
+		public bool isAttackCanceled()
+		{
+			return currentTarget == null;
 		}
 
 		// ******************************** Draw ********************************************

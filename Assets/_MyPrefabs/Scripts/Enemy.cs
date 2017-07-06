@@ -18,12 +18,14 @@ namespace RPG.Characters
 		// ******************************************* Paras *******************************************
 		bool isDead = false;
 		RawImage healthBar;
+		Player player;
 
 		// ******************************************* Unity Calls *******************************************
 		void Start()
 		{
 			SetupCharacter ();
 			anim.runtimeAnimatorController = animatorOverrideController;
+			player = FindObjectOfType<Player> ();
 
 			useDefaultBaseValue ();
 			SetupRuntimeAnimator ();
@@ -37,28 +39,39 @@ namespace RPG.Characters
 		private void SetupRuntimeAnimator()
 		{
 			anim.runtimeAnimatorController = animatorOverrideController;
-			animatorOverrideController ["DEFAULT DEATH"] = characterConfig.DeathAnimations [0];
 		}
 
 		// ******************************************* Damage Taken *******************************************
-		public void TakeDamage(int damage, float delay, AudioClip attackSound)
+		public void TakeDamage(int damage, float delay, AudioClip attackSound,GameObject attacker)
 		{
-			StartCoroutine (onDamage (damage, delay,attackSound));
+			StartCoroutine (onDamage (damage, delay,attackSound,attacker));
 		}
 
-		IEnumerator onDamage(int damage, float delay, AudioClip attackSound)
+		IEnumerator onDamage(int damage, float delay, AudioClip attackSound, GameObject attacker)
 		{
-			if (isLastHit(damage)) {
-				audio.clip = characterConfig.SoundClips[(int)(UnityEngine.Random.Range(0, characterConfig.SoundClips.Length))];
-			} else {
-				audio.clip = attackSound;
-			}
-
-			c_health = Mathf.Clamp (c_health - damage, 0, health);
 			yield return new WaitForSecondsRealtime (delay);
-			UpdateHealth ();
 
-			audio.Play ();
+			if(attacker!=null && attacker.GetComponent<Player>()!=null)
+			{
+				if (!player.isAttackCanceled())
+				{
+					if (isLastHit(damage))
+					{
+						audio.clip = characterConfig.SoundClips[(int)(UnityEngine.Random.Range(0, characterConfig.SoundClips.Length))];
+					}
+					else
+					{
+						audio.clip = attackSound;
+					}
+
+					c_health = Mathf.Clamp (c_health - damage, 0, health);
+
+					UpdateHealth ();
+
+					audio.Play ();
+				}
+			}
+				
 			if (c_health == 0)
 			{
 				StartCoroutine (Die());
@@ -68,6 +81,7 @@ namespace RPG.Characters
 		IEnumerator Die()
 		{
 			isDead = true;
+			animatorOverrideController ["DEFAULT DEATH"] = characterConfig.DeathAnimations [(int)(UnityEngine.Random.Range(0, characterConfig.DeathAnimations.Length))];
 			anim.SetTrigger(CharacterAnimatorPara.DEATH);
 
 			/*float clipLength = characterConfig.SoundClips.Length;
