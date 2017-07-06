@@ -23,7 +23,6 @@ namespace RPG.Characters
 		void Start()
 		{
 			SetupCharacter ();
-			SetupHealthBar ();
 			anim.runtimeAnimatorController = animatorOverrideController;
 
 			useDefaultBaseValue ();
@@ -39,12 +38,6 @@ namespace RPG.Characters
 		{
 			anim.runtimeAnimatorController = animatorOverrideController;
 			animatorOverrideController ["DEFAULT DEATH"] = characterConfig.DeathAnimations [0];
-		}
-
-		private void SetupHealthBar()
-		{
-			healthBar = GetComponentInChildren<RawImage> ();
-			healthBar.uvRect = new Rect(0f, 0f, 0.5f, 1f);
 		}
 
 		// ******************************************* Damage Taken *******************************************
@@ -95,10 +88,12 @@ namespace RPG.Characters
 		// ******************************************* Update UI *******************************************
 		void UpdateHealth()
 		{
+			if (healthBar == null) {
+				healthBar = GetComponentInChildren<RawImage> ();
+			}
 			float xValue = -(healthAsPercentage / 2f) - 0.5f;
 
 			healthBar.uvRect = new Rect(xValue, 0f, 0.5f, 1f);
 		}
-
     }
 }

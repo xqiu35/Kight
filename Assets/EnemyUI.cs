@@ -13,19 +13,19 @@ namespace RPG.Characters
 		[SerializeField]
 		GameObject enemyCanvasPrefab = null;
 
-		Camera cameraToLookAt;
+		RectTransform t;
 
 		// Use this for initialization 
 		void Start()
 		{
-			cameraToLookAt = Camera.main;
-			Instantiate(enemyCanvasPrefab, transform.position, Quaternion.identity, transform);
+			Instantiate(enemyCanvasPrefab, transform.position, Quaternion.identity,transform);
+			t = GetComponentInChildren<RectTransform> ();
 		}
 
-		// Update is called once per frame 
-		void LateUpdate()
+		void Update()
 		{
-			transform.LookAt(cameraToLookAt.transform);
+			RectTransform t = GetComponentInChildren<RectTransform> ();
+			t.rotation = Quaternion.LookRotation (Camera.main.transform.forward);
 		}
 	}
 }
